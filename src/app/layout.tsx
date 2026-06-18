@@ -1,3 +1,9 @@
+export const metadata = {
+  title: "Kalro Farm - Modern Agriculture Solutions in Kenya",
+  description:
+    "Kalro Farm provides modern farming knowledge, agriculture insights, and solutions for farmers in Kenya.",
+}
+
 import type { Metadata } from "next";
 import "./globals.css";
 
