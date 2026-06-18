@@ -11,7 +11,7 @@ export default function About() {
 
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-base sm:text-lg text-gray-700 leading-relaxed">
-            Karlo Farm is dedicated to providing high-quality farm products
+            Kalro Farm is dedicated to providing high-quality farm products
             to families, businesses, and communities across Kenya.
             Located in Nakuru, we combine modern farming practices with
             a commitment to quality, sustainability, and customer satisfaction.

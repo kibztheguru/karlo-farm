@@ -72,7 +72,7 @@ export default function Gallery() {
                 </h3>
 
                 <p className="text-gray-500 text-sm mt-2">
-                  Karlo Farm • Nakuru, Kenya
+                  Kalro Farm • Nakuru, Kenya
                 </p>
               </div>
             </div>

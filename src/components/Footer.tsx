@@ -10,7 +10,7 @@ export default function Footer() {
           {/* Company Info */}
           <div>
             <h3 className="text-2xl font-bold">
-              Karlo Farm
+              Kalro Farm
             </h3>
 
             <p className="mt-3 text-gray-300">
@@ -24,19 +24,19 @@ export default function Footer() {
               Contact
             </h4>
 
-            <p>📞 0790424835</p>
+            <p>📞 0783265524</p>
 
             <a
-              href="mailto:karlofarmnaivasha@gmail.com"
+              href="mailto:kalrofarmnaivasha@gmail.com"
               className="block mt-2 hover:text-green-300 transition"
             >
-              📧 karlofarmnaivasha@gmail.com
+              📧 kalrofarmnaivasha@gmail.com
             </a>
 
             <p className="mt-2">📍 Nakuru, Kenya</p>
 
             <a
-              href="https://wa.me/254790424835?text=Hello%20Karlo%20Farm,%20I%20would%20like%20to%20make%20an%20inquiry."
+              href="https://wa.me/254790424835?text=Hello%20Kalro%20Farm,%20I%20would%20like%20to%20make%20an%20inquiry."
               target="_blank"
               rel="noopener noreferrer"
               className="block mt-2 hover:text-green-300 transition"
@@ -63,7 +63,7 @@ export default function Footer() {
               </a>
 
               <a
-                href="https://wa.me/254790424835"
+                href="https://wa.me/254783265524"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-green-400 transition"
@@ -79,7 +79,7 @@ export default function Footer() {
         <hr className="my-6 border-gray-700" />
 
         <p className="text-center text-sm text-gray-300">
-          © 2026 Karlo Farm. All Rights Reserved.
+          © 2026 Kalro Farm. All Rights Reserved.
         </p>
 
       </div>

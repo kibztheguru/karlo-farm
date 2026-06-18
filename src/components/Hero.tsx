@@ -26,7 +26,7 @@ export default function Hero() {
         <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold mb-6 leading-tight">
           Fresh From
           <span className="block text-green-400">
-            Karlo Farm
+            Kalro Farm
           </span>
         </h1>
 

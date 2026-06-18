@@ -4,19 +4,19 @@ export default function Testimonials() {
       name: "James Mwangi",
       role: "Regular Customer",
       message:
-        "Karlo Farm consistently delivers fresh, high-quality produce. Their service is reliable and professional.",
+        "Kalro Farm consistently delivers fresh, high-quality produce. Their service is reliable and professional.",
     },
     {
       name: "Grace Wanjiku",
       role: "Restaurant Owner",
       message:
-        "We've sourced farm products from Karlo Farm for months. The quality and consistency are outstanding.",
+        "We've sourced farm products from Kalro Farm for months. The quality and consistency are outstanding.",
     },
     {
       name: "Peter Kiptoo",
       role: "Local Buyer",
       message:
-        "Excellent customer service and top-quality products. I highly recommend Karlo Farm to anyone.",
+        "Excellent customer service and top-quality products. I highly recommend Kalro Farm to anyone.",
     },
   ];
 

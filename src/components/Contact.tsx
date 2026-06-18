@@ -50,8 +50,8 @@ export default function Contact() {
           {/* INFO */}
           <div>
             <p>📍 Nakuru, Kenya</p>
-            <p>📞 0748043720</p>
-            <p>📧 karlofarm@gmail.com</p>
+            <p>📞 0783265524</p>
+            <p>📧 kalrofarm@gmail.com</p>
           </div>
 
           {/* FORM */}

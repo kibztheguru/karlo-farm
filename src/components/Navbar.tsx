@@ -18,7 +18,7 @@ export default function Navbar() {
 
           <div>
             <h1 className="text-lg sm:text-xl font-bold text-green-800">
-              Karlo Farm
+              Kalro Farm
             </h1>
             <p className="text-xs text-gray-500">
               Fresh • Quality • Sustainable
