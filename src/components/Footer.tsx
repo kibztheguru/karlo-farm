@@ -36,7 +36,7 @@ export default function Footer() {
             <p className="mt-2">📍 Nakuru, Kenya</p>
 
             <a
-              href="https://wa.me/254790424835?text=Hello%20Kalro%20Farm,%20I%20would%20like%20to%20make%20an%20inquiry."
+              href="https://wa.me/254783265524?text=Hello%20Kalro%20Farm,%20I%20would%20like%20to%20make%20an%20inquiry."
               target="_blank"
               rel="noopener noreferrer"
               className="block mt-2 hover:text-green-300 transition"
