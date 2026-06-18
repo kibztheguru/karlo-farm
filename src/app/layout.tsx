@@ -1,16 +1,10 @@
-export const metadata = {
-  title: "Kalro Farm - Modern Agriculture Solutions in Kenya",
-  description:
-    "Kalro Farm provides modern farming knowledge, agriculture insights, and solutions for farmers in Kenya.",
-}
-
 import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Kalro Farm",
+  title: "Kalro Farm - Modern Agriculture Solutions in Kenya",
   description:
-    "Kalro Farm is a trusted agricultural business in Nakuru providing quality farm products and services.",
+    "Kalro Farm provides modern farming knowledge, agriculture insights, and solutions for farmers in Kenya.",
 };
 
 export default function RootLayout({
@@ -20,9 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
