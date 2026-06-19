@@ -86,7 +86,7 @@ export default function Products() {
                   </p>
 
                   <a
-                    href="https://wa.me/25478326?text=Hello%20Kalro%20Farm,%20I%20am%20interested%20in%20your%20products."
+                    href="https://wa.me/254783265524?text=Hello%20Kalro%20Farm,%20I%20am%20interested%20in%20your%20products."
                     target="_blank"
                     rel="noopener noreferrer"
                     className="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-lg transition"
