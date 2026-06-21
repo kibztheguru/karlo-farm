@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 type GalleryItem = {
@@ -6,75 +9,71 @@ type GalleryItem = {
   image: string;
 };
 
-export default async function Gallery() {
-  const { data: images, error } = await supabase
-    .from("gallery")
-    .select("*")
-    .order("created_at", { ascending: false });
+export default function Gallery() {
+  const [images, setImages] = useState<GalleryItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  console.log("📦 Gallery data:", images);
-  console.log("❌ Gallery error:", error);
+  useEffect(() => {
+    const fetchImages = async () => {
+      const { data, error } = await supabase
+        .from("gallery")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-  // ERROR STATE
-  if (error) {
+      console.log("📦 Gallery data:", data);
+      console.log("❌ Gallery error:", error);
+
+      if (error) {
+        console.log(error.message);
+      } else {
+        setImages(data || []);
+      }
+
+      setLoading(false);
+    };
+
+    fetchImages();
+  }, []);
+
+  if (loading) {
     return (
-      <div className="py-20 text-center text-red-600">
-        Failed to load gallery: {error.message}
+      <div className="py-20 text-center">
+        Loading gallery...
       </div>
     );
   }
 
-  // EMPTY STATE
-  if (!images || images.length === 0) {
+  if (images.length === 0) {
     return (
       <div className="py-20 text-center text-gray-500">
-        No images found in gallery
+        No images found
       </div>
     );
   }
 
   return (
-    <section id="gallery" className="py-16 sm:py-20 lg:py-24 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+    <section id="gallery" className="py-16 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-6">
 
-        {/* Heading */}
-        <div className="text-center mb-12 lg:mb-16">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-green-800">
-            Our Gallery
-          </h2>
+        <h2 className="text-3xl font-bold text-green-700 text-center mb-10">
+          Our Gallery
+        </h2>
 
-          <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
-            Take a closer look at our farm, our produce, and our daily operations.
-          </p>
-        </div>
+        <div className="grid md:grid-cols-3 gap-6">
 
-        {/* Gallery Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+          {images.map((img) => (
+            <div key={img.id} className="bg-white rounded-xl overflow-hidden shadow">
 
-          {images.map((image: GalleryItem) => (
-            <div
-              key={image.id}
-              className="group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition duration-300"
-            >
-
-              {/* SAFE IMAGE (NO Next/Image CRASH) */}
               <img
-                src={image.image}
-                alt={image.title || "Gallery image"}
-                className="w-full h-64 sm:h-72 object-cover group-hover:scale-110 transition duration-500"
-                onError={(e) => {
-                  console.log("❌ Image failed:", image.image);
-                }}
+                src={img.image}
+                alt={img.title || "gallery"}
+                className="w-full h-60 object-cover"
               />
 
-              <div className="p-5">
-                <h3 className="text-lg font-semibold text-black">
-                  {image.title || "Farm Image"}
+              <div className="p-4">
+                <h3 className="font-semibold">
+                  {img.title || "Farm Image"}
                 </h3>
-
-                <p className="text-gray-500 text-sm mt-2">
-                  Kalro Farm • Nakuru, Kenya
-                </p>
               </div>
 
             </div>
