@@ -1,9 +1,14 @@
-export default function Hero() {
+type Settings = {
+  hero_title?: string;
+  hero_subtitle?: string;
+};
+
+export default function Hero({ settings }: { settings: Settings | null }) {
   return (
-  <section
-  id="home"
-  className="relative min-h-screen flex items-center justify-center pt-24"
->
+    <section
+      id="home"
+      className="relative min-h-screen flex items-center justify-center pt-24"
+    >
       {/* Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center"
@@ -23,16 +28,30 @@ export default function Hero() {
           Premium Agricultural Products
         </span>
 
+        {/* TITLE (CMS CONTROLLED) */}
         <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold mb-6 leading-tight">
-          Fresh From
-          <span className="block text-green-400">
-            Kalro Farm
-          </span>
+          {settings?.hero_title ? (
+            <>
+              {settings.hero_title.split(" ")[0]}{" "}
+              <span className="block text-green-400">
+                {settings.hero_title.split(" ").slice(1).join(" ") ||
+                  "Kalro Farm"}
+              </span>
+            </>
+          ) : (
+            <>
+              Fresh From
+              <span className="block text-green-400">
+                Kalro Farm
+              </span>
+            </>
+          )}
         </h1>
 
+        {/* SUBTITLE (CMS CONTROLLED) */}
         <p className="text-base sm:text-lg lg:text-2xl max-w-3xl mx-auto text-gray-200">
-          Delivering fresh, high-quality agricultural products
-          grown with care, sustainability, and a commitment to excellence.
+          {settings?.hero_subtitle ||
+            "Delivering fresh, high-quality agricultural products grown with care, sustainability, and a commitment to excellence."}
         </p>
 
         {/* Buttons */}
@@ -53,8 +72,6 @@ export default function Hero() {
           </a>
 
         </div>
-
-        
 
       </div>
     </section>

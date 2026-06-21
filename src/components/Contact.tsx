@@ -1,9 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
 
-export default function Contact() {
+type Settings = {
+  phone?: string;
+  email?: string;
+  whatsapp?: string;
+};
+
+export default function Contact({ settings }: { settings: Settings | null }) {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     name: "",
@@ -11,13 +16,17 @@ export default function Contact() {
     message: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    const { supabase } = await import("@/lib/supabase");
 
     const { error } = await supabase.from("messages").insert([
       {
@@ -48,10 +57,26 @@ export default function Contact() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
 
           {/* INFO */}
-          <div>
+          <div className="space-y-3 text-gray-700">
+
             <p>📍 Nakuru, Kenya</p>
-            <p>📞 0783265524</p>
-            <p>📧 kalrofarm@gmail.com</p>
+
+            <p>
+              📞 {settings?.phone || "0783265524"}
+            </p>
+
+            <p>
+              📧 {settings?.email || "kalrofarm@gmail.com"}
+            </p>
+
+            <a
+              href={`https://wa.me/${settings?.whatsapp || "254783265524"}`}
+              target="_blank"
+              className="inline-block mt-4 bg-green-600 text-white px-4 py-2 rounded"
+            >
+              Chat on WhatsApp
+            </a>
+
           </div>
 
           {/* FORM */}

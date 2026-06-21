@@ -9,18 +9,31 @@ import Footer from "@/components/Footer";
 import Stats from "@/components/Stats";
 import WhatsappButton from "@/components/WhatsappButton";
 
-export default function Home() {
+import { getSettings } from "@/lib/settings";
+
+export default async function Home() {
+  const settings = await getSettings();
+
   return (
     <>
       <Navbar />
-      <Hero />
+
+      <Hero settings={settings} />
+
       <Stats />
-      <About />
+
+      <About settings={settings} />
+
       <Products />
+
       <Gallery />
+
       <Testimonials />
-      <Contact />
-      <Footer />
+
+      <Contact settings={settings} />
+
+      <Footer settings={settings} />
+
       <WhatsappButton />
     </>
   );

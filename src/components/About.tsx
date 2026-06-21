@@ -1,4 +1,8 @@
-export default function About() {
+type Settings = {
+  about_text?: string;
+};
+
+export default function About({ settings }: { settings: Settings | null }) {
   return (
     <section id="story" className="py-16 sm:py-20 lg:py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -11,10 +15,8 @@ export default function About() {
 
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-base sm:text-lg text-gray-700 leading-relaxed">
-            Kalro Farm is dedicated to providing high-quality farm products
-            to families, businesses, and communities across Kenya.
-            Located in Nakuru, we combine modern farming practices with
-            a commitment to quality, sustainability, and customer satisfaction.
+            {settings?.about_text ||
+              "Kalro Farm is dedicated to providing high-quality farm products to families, businesses, and communities across Kenya. Located in Nakuru, we combine modern farming practices with a commitment to quality, sustainability, and customer satisfaction."}
           </p>
         </div>
 
