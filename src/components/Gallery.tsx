@@ -3,6 +3,12 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
+const { data, error } = await supabase
+  .from("gallery")
+  .select("*");
+
+console.log("DATA:", data);
+console.log("ERROR:", error);
 type GalleryItem = {
   id: string;
   title: string | null;
