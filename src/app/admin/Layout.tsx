@@ -10,11 +10,12 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
 
-  const menu = [
-    { name: "Messages", path: "/admin/messages" },
-    { name: "Products", path: "/admin/products" },
-    { name: "Gallery", path: "/admin/gallery" },
-  ];
+ const menu = [
+  { name: "Dashboard", path: "/admin" },
+  { name: "Messages", path: "/admin/messages" },
+  { name: "Products", path: "/admin/products" },
+  { name: "Gallery", path: "/admin/gallery" },
+];
 
   return (
     <div className="min-h-screen flex bg-gray-100">
