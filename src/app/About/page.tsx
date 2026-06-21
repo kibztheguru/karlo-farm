@@ -1,5 +1,8 @@
-import About from '@/components/About'
+import About from "@/components/About";
+import { getSettings } from "@/lib/settings";
 
-export default function Page() {
-  return <About />
+export default async function Page() {
+  const settings = await getSettings();
+
+  return <About settings={settings} />;
 }
