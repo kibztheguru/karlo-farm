@@ -20,9 +20,11 @@ export default function AdminProducts() {
     name: "",
     description: "",
     price: "",
-    image: "",
     category: "",
   });
+
+  const [imageUrl, setImageUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
 
   // FETCH PRODUCTS
   const fetchProducts = async () => {
@@ -35,24 +37,61 @@ export default function AdminProducts() {
     fetchProducts();
   }, []);
 
-  // HANDLE INPUT
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  // TEXT INPUTS
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  // IMAGE UPLOAD
+  const handleImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+
+    const fileName = `${Date.now()}-${file.name}`;
+
+    const { error } = await supabase.storage
+      .from("products")
+      .upload(fileName, file);
+
+    if (error) {
+      alert("Image upload failed");
+      setUploading(false);
+      return;
+    }
+
+    const { data } = supabase.storage
+      .from("products")
+      .getPublicUrl(fileName);
+
+    setImageUrl(data.publicUrl);
+    setUploading(false);
   };
 
   // ADD PRODUCT
   const addProduct = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    await supabase.from("products").insert([form]);
+    await supabase.from("products").insert([
+      {
+        ...form,
+        image: imageUrl,
+      },
+    ]);
 
     setForm({
       name: "",
       description: "",
       price: "",
-      image: "",
       category: "",
     });
+
+    setImageUrl("");
 
     fetchProducts();
   };
@@ -64,16 +103,16 @@ export default function AdminProducts() {
   };
 
   return (
-    <div>
+    <div className="space-y-6">
 
-      <h1 className="text-3xl font-bold text-green-700 mb-6">
+      <h1 className="text-3xl font-bold text-green-700">
         Products Manager
       </h1>
 
       {/* FORM */}
       <form
         onSubmit={addProduct}
-        className="bg-white p-4 rounded-xl shadow mb-8 grid gap-3"
+        className="bg-white p-4 rounded-xl shadow space-y-3"
       >
 
         <input
@@ -81,7 +120,7 @@ export default function AdminProducts() {
           placeholder="Product Name"
           value={form.name}
           onChange={handleChange}
-          className="border p-2 rounded"
+          className="border p-2 rounded w-full"
           required
         />
 
@@ -90,7 +129,7 @@ export default function AdminProducts() {
           placeholder="Description"
           value={form.description}
           onChange={handleChange}
-          className="border p-2 rounded"
+          className="border p-2 rounded w-full"
         />
 
         <input
@@ -98,7 +137,7 @@ export default function AdminProducts() {
           placeholder="Price"
           value={form.price}
           onChange={handleChange}
-          className="border p-2 rounded"
+          className="border p-2 rounded w-full"
         />
 
         <input
@@ -106,18 +145,32 @@ export default function AdminProducts() {
           placeholder="Category"
           value={form.category}
           onChange={handleChange}
-          className="border p-2 rounded"
+          className="border p-2 rounded w-full"
         />
 
+        {/* IMAGE UPLOAD */}
         <input
-          name="image"
-          placeholder="Image URL"
-          value={form.image}
-          onChange={handleChange}
-          className="border p-2 rounded"
+          type="file"
+          accept="image/*"
+          onChange={handleImageUpload}
+          className="border p-2 rounded w-full"
         />
 
-        <button className="bg-green-600 text-white py-2 rounded">
+        {uploading && (
+          <p className="text-sm text-gray-500">Uploading image...</p>
+        )}
+
+        {imageUrl && (
+          <img
+            src={imageUrl}
+            className="w-32 h-32 object-cover rounded"
+          />
+        )}
+
+        <button
+          type="submit"
+          className="bg-green-600 text-white py-2 rounded w-full"
+        >
           Add Product
         </button>
 
@@ -131,6 +184,13 @@ export default function AdminProducts() {
 
           {products.map((p) => (
             <div key={p.id} className="bg-white p-4 rounded-xl shadow">
+
+              {p.image && (
+                <img
+                  src={p.image}
+                  className="w-full h-40 object-cover rounded mb-3"
+                />
+              )}
 
               <h2 className="font-bold text-lg">{p.name}</h2>
               <p className="text-gray-600">{p.description}</p>
