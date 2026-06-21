@@ -1,23 +1,40 @@
-import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 
 type GalleryItem = {
   id: string;
-  title: string;
+  title: string | null;
   image: string;
 };
 
 export default async function Gallery() {
-  const { data: images } = await supabase
+  const { data: images, error } = await supabase
     .from("gallery")
     .select("*")
     .order("created_at", { ascending: false });
 
+  console.log("📦 Gallery data:", images);
+  console.log("❌ Gallery error:", error);
+
+  // ERROR STATE
+  if (error) {
+    return (
+      <div className="py-20 text-center text-red-600">
+        Failed to load gallery: {error.message}
+      </div>
+    );
+  }
+
+  // EMPTY STATE
+  if (!images || images.length === 0) {
+    return (
+      <div className="py-20 text-center text-gray-500">
+        No images found in gallery
+      </div>
+    );
+  }
+
   return (
-    <section
-      id="gallery"
-      className="py-16 sm:py-20 lg:py-24 bg-gray-50"
-    >
+    <section id="gallery" className="py-16 sm:py-20 lg:py-24 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
         {/* Heading */}
@@ -34,30 +51,32 @@ export default async function Gallery() {
         {/* Gallery Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
 
-          {images?.map((image: GalleryItem) => (
+          {images.map((image: GalleryItem) => (
             <div
               key={image.id}
               className="group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition duration-300"
             >
-              <div className="overflow-hidden">
-                <Image
-                  src={image.image}
-                  alt={image.title}
-                  width={600}
-                  height={400}
-                  className="w-full h-64 sm:h-72 object-cover group-hover:scale-110 transition duration-500"
-                />
-              </div>
+
+              {/* SAFE IMAGE (NO Next/Image CRASH) */}
+              <img
+                src={image.image}
+                alt={image.title || "Gallery image"}
+                className="w-full h-64 sm:h-72 object-cover group-hover:scale-110 transition duration-500"
+                onError={(e) => {
+                  console.log("❌ Image failed:", image.image);
+                }}
+              />
 
               <div className="p-5">
                 <h3 className="text-lg font-semibold text-black">
-                  {image.title}
+                  {image.title || "Farm Image"}
                 </h3>
 
                 <p className="text-gray-500 text-sm mt-2">
                   Kalro Farm • Nakuru, Kenya
                 </p>
               </div>
+
             </div>
           ))}
 
