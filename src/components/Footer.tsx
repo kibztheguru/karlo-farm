@@ -1,6 +1,13 @@
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 
-export default function Footer() {
+type Settings = {
+  footer_text?: string;
+  phone?: string;
+  email?: string;
+  whatsapp?: string;
+};
+
+export default function Footer({ settings }: { settings: Settings | null }) {
   return (
     <footer className="bg-green-900 text-white py-10">
       <div className="max-w-7xl mx-auto px-6">
@@ -14,7 +21,8 @@ export default function Footer() {
             </h3>
 
             <p className="mt-3 text-gray-300">
-              Delivering quality farm products from Nakuru with a commitment to quality, sustainability, and customer satisfaction.
+              {settings?.footer_text ||
+                "Delivering quality farm products from Nakuru with a commitment to quality, sustainability, and customer satisfaction."}
             </p>
           </div>
 
@@ -24,19 +32,21 @@ export default function Footer() {
               Contact
             </h4>
 
-            <p>📞 0783265524</p>
+            <p>
+              📞 {settings?.phone || "0783265524"}
+            </p>
 
             <a
-              href="mailto:kalrofarmnaivasha@gmail.com"
+              href={`mailto:${settings?.email || "kalrofarmnaivasha@gmail.com"}`}
               className="block mt-2 hover:text-green-300 transition"
             >
-              📧 kalrofarmnaivasha@gmail.com
+              📧 {settings?.email || "kalrofarmnaivasha@gmail.com"}
             </a>
 
             <p className="mt-2">📍 Nakuru, Kenya</p>
 
             <a
-              href="https://wa.me/254783265524?text=Hello%20Kalro%20Farm,%20I%20would%20like%20to%20make%20an%20inquiry."
+              href={`https://wa.me/${settings?.whatsapp || "254783265524"}`}
               target="_blank"
               rel="noopener noreferrer"
               className="block mt-2 hover:text-green-300 transition"
@@ -63,7 +73,7 @@ export default function Footer() {
               </a>
 
               <a
-                href="https://wa.me/254783265524"
+                href={`https://wa.me/${settings?.whatsapp || "254783265524"}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-green-400 transition"
@@ -79,7 +89,7 @@ export default function Footer() {
         <hr className="my-6 border-gray-700" />
 
         <p className="text-center text-sm text-gray-300">
-          © 2026 Kalro Farm. All Rights Reserved.
+          © {new Date().getFullYear()} Kalro Farm. All Rights Reserved.
         </p>
 
       </div>
