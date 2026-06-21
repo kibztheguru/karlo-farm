@@ -3,82 +3,170 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
+type GalleryItem = {
+  id: string;
+  image: string;
+  created_at: string;
+};
+
 export default function AdminGallery() {
-  const [images, setImages] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [images, setImages] = useState<GalleryItem[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // FETCH IMAGES
   const fetchImages = async () => {
-    setLoading(true);
     setError(null);
-
-    console.log("📡 Fetching gallery images...");
 
     const { data, error } = await supabase
       .from("gallery")
-      .select("*");
+      .select("*")
+      .order("created_at", { ascending: false });
 
-    console.log("📦 RAW RESPONSE DATA:", data);
-    console.log("❌ RAW RESPONSE ERROR:", error);
+    console.log("📦 FETCH RESULT:", data);
+    console.log("❌ FETCH ERROR:", error);
 
     if (error) {
       setError(error.message);
-      setLoading(false);
       return;
     }
 
     setImages(data || []);
-    setLoading(false);
   };
 
   useEffect(() => {
     fetchImages();
   }, []);
 
-  return (
-    <div className="p-6 space-y-4">
+  // UPLOAD IMAGE
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-      <h1 className="text-2xl font-bold text-green-700">
-        Gallery Debug Page
+    setUploading(true);
+    setError(null);
+
+    try {
+      const fileName = `${Date.now()}-${file.name}`;
+
+      console.log("⬆ Uploading file:", fileName);
+
+      // 1. Upload to storage
+      const { error: uploadError } = await supabase.storage
+        .from("gallery")
+        .upload(fileName, file);
+
+      if (uploadError) {
+        console.log("❌ Upload error:", uploadError.message);
+        setError(uploadError.message);
+        setUploading(false);
+        return;
+      }
+
+      // 2. Get public URL
+      const { data: urlData } = supabase.storage
+        .from("gallery")
+        .getPublicUrl(fileName);
+
+      const imageUrl = urlData.publicUrl;
+
+      console.log("🔗 Public URL:", imageUrl);
+
+      // 3. Insert into DB
+      const { error: dbError } = await supabase
+        .from("gallery")
+        .insert([
+          {
+            image: imageUrl,
+          },
+        ]);
+
+      if (dbError) {
+        console.log("❌ DB insert error:", dbError.message);
+        setError(dbError.message);
+        setUploading(false);
+        return;
+      }
+
+      console.log("✅ Image saved successfully");
+
+      fetchImages();
+    } catch (err) {
+      console.log("❌ Unexpected error:", err);
+      setError("Unexpected error occurred");
+    }
+
+    setUploading(false);
+  };
+
+  // DELETE IMAGE
+  const deleteImage = async (id: string) => {
+    const confirmDelete = confirm("Delete this image?");
+    if (!confirmDelete) return;
+
+    const { error } = await supabase
+      .from("gallery")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      setError(error.message);
+      return;
+    }
+
+    setImages((prev) => prev.filter((img) => img.id !== id));
+  };
+
+  return (
+    <div className="space-y-6">
+
+      <h1 className="text-3xl font-bold text-green-700">
+        Gallery Manager
       </h1>
 
       {/* ERROR DISPLAY */}
       {error && (
         <div className="bg-red-100 text-red-700 p-3 rounded">
-          <p>❌ Error: {error}</p>
+          ❌ {error}
         </div>
       )}
 
-      {/* LOADING */}
-      {loading && <p>Loading images...</p>}
+      {/* UPLOAD */}
+      <div className="bg-white p-4 rounded-xl shadow">
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleUpload}
+          className="w-full"
+        />
 
-      {/* DEBUG INFO */}
-      <div className="bg-gray-100 p-3 rounded text-sm">
-        <p><strong>Total Images:</strong> {images.length}</p>
+        {uploading && (
+          <p className="text-sm text-gray-500 mt-2">
+            Uploading image...
+          </p>
+        )}
       </div>
 
-      {/* IMAGE GRID */}
+      {/* GRID */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
 
-        {images.map((img, index) => (
-          <div key={index} className="border rounded p-2">
-
-            <p className="text-xs text-gray-500 mb-1">
-              ID: {img.id}
-            </p>
-
-            <p className="text-xs text-gray-500 mb-2 break-all">
-              URL: {img.image}
-            </p>
+        {images.map((img) => (
+          <div
+            key={img.id}
+            className="relative group rounded-xl overflow-hidden shadow"
+          >
 
             <img
               src={img.image}
-              alt="gallery"
-              className="w-full h-40 object-cover rounded"
-              onError={(e) => {
-                console.log("❌ Image failed to load:", img.image);
-              }}
+              className="w-full h-40 object-cover"
             />
+
+            <button
+              onClick={() => deleteImage(img.id)}
+              className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 transition"
+            >
+              Delete
+            </button>
 
           </div>
         ))}
