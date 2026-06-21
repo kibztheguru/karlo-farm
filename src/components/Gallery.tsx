@@ -1,33 +1,18 @@
 import Image from "next/image";
+import { supabase } from "@/lib/supabase";
 
-const images = [
-  {
-    src: "/images/farm1.jpg",
-    title: "Fresh Farm Produce",
-  },
-  {
-    src: "/images/farm2.jpg",
-    title: "Healthy Crops",
-  },
-  {
-    src: "/images/farm3.jpg",
-    title: "Quality Harvest",
-  },
-  {
-    src: "/images/farm4.jpg",
-    title: "Sustainable Farming",
-  },
-  {
-    src: "/images/farm5.jpg",
-    title: "Farm Operations",
-  },
-  {
-    src: "/images/farm6.jpg",
-    title: "Premium Products",
-  },
-];
+type GalleryItem = {
+  id: string;
+  title: string;
+  image: string;
+};
 
-export default function Gallery() {
+export default async function Gallery() {
+  const { data: images } = await supabase
+    .from("gallery")
+    .select("*")
+    .order("created_at", { ascending: false });
+
   return (
     <section
       id="gallery"
@@ -42,23 +27,21 @@ export default function Gallery() {
           </h2>
 
           <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
-            Take a closer look at our farm, our produce, and the
-            dedication that goes into delivering quality agricultural
-            products to our customers.
+            Take a closer look at our farm, our produce, and our daily operations.
           </p>
         </div>
 
         {/* Gallery Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
 
-          {images.map((image, index) => (
+          {images?.map((image: GalleryItem) => (
             <div
-              key={index}
+              key={image.id}
               className="group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition duration-300"
             >
               <div className="overflow-hidden">
                 <Image
-                  src={image.src}
+                  src={image.image}
                   alt={image.title}
                   width={600}
                   height={400}
