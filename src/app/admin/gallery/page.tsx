@@ -49,15 +49,12 @@ export default function AdminGallery() {
     try {
       const fileName = `${Date.now()}-${file.name}`;
 
-      console.log("⬆ Uploading file:", fileName);
-
       // 1. Upload to storage
       const { error: uploadError } = await supabase.storage
         .from("gallery")
         .upload(fileName, file);
 
       if (uploadError) {
-        console.log("❌ Upload error:", uploadError.message);
         setError(uploadError.message);
         setUploading(false);
         return;
@@ -70,29 +67,19 @@ export default function AdminGallery() {
 
       const imageUrl = urlData.publicUrl;
 
-      console.log("🔗 Public URL:", imageUrl);
-
       // 3. Insert into DB
       const { error: dbError } = await supabase
         .from("gallery")
-        .insert([
-          {
-            image: imageUrl,
-          },
-        ]);
+        .insert([{ image: imageUrl }]);
 
       if (dbError) {
-        console.log("❌ DB insert error:", dbError.message);
         setError(dbError.message);
         setUploading(false);
         return;
       }
 
-      console.log("✅ Image saved successfully");
-
       fetchImages();
     } catch (err) {
-      console.log("❌ Unexpected error:", err);
       setError("Unexpected error occurred");
     }
 
@@ -101,45 +88,42 @@ export default function AdminGallery() {
 
   // DELETE IMAGE
   const deleteImage = async (id: string, imageUrl: string) => {
-  const confirmDelete = confirm("Delete this image?");
-  if (!confirmDelete) return;
+    const confirmDelete = confirm("Delete this image?");
+    if (!confirmDelete) return;
 
-  try {
-    // 1. Extract file name from URL
-    const fileName = imageUrl.split("/").pop();
+    try {
+      const fileName = imageUrl.split("/").pop();
 
-    if (fileName) {
-      // 2. Delete from storage bucket
-      const { error: storageError } = await supabase.storage
-        .from("gallery")
-        .remove([fileName]);
-
-      if (storageError) {
-        console.log("Storage delete error:", storageError.message);
+      if (fileName) {
+        await supabase.storage
+          .from("gallery")
+          .remove([fileName]);
       }
+
+      const { error } = await supabase
+        .from("gallery")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
+        setError(error.message);
+        return;
+      }
+
+      setImages((prev) => prev.filter((img) => img.id !== id));
+    } catch (err) {
+      setError("Delete failed");
     }
+  };
 
-    // 3. Delete from database
-    const { error: dbError } = await supabase
-      .from("gallery")
-      .delete()
-      .eq("id", id);
+  return (
+    <div className="space-y-6">
 
-    if (dbError) {
-      console.log("DB delete error:", dbError.message);
-      return;
-    }
+      <h1 className="text-3xl font-bold text-green-700">
+        Gallery Manager
+      </h1>
 
-    // 4. Update UI
-    setImages((prev) => prev.filter((img) => img.id !== id));
-
-    console.log("✅ Image deleted successfully");
-  } catch (err) {
-    console.log("❌ Unexpected error:", err);
-  }
-};
-
-      {/* ERROR DISPLAY */}
+      {/* ERROR */}
       {error && (
         <div className="bg-red-100 text-red-700 p-3 rounded">
           ❌ {error}
@@ -170,19 +154,17 @@ export default function AdminGallery() {
             key={img.id}
             className="relative group rounded-xl overflow-hidden shadow"
           >
-
             <img
               src={img.image}
               className="w-full h-40 object-cover"
             />
 
             <button
-              onClick={() => deleteImage(img.id)}
+              onClick={() => deleteImage(img.id, img.image)}
               className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 transition"
             >
               Delete
             </button>
-
           </div>
         ))}
 
