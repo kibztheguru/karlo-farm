@@ -40,7 +40,7 @@ export default async function Gallery() {
               className="group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition duration-300"
             >
               <div className="overflow-hidden">
-                <Img
+                <img
                   src={image.image}
                   alt={image.title}
                   width={600}
