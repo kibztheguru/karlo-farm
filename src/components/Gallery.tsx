@@ -3,24 +3,23 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
-const { data, error } = await supabase
-  .from("gallery")
-  .select("*");
-
-console.log("DATA:", data);
-console.log("ERROR:", error);
 type GalleryItem = {
   id: string;
-  title: string | null;
   image: string;
+  title: string | null;
+  created_at: string;
 };
 
 export default function Gallery() {
   const [images, setImages] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchImages = async () => {
+    const fetchGallery = async () => {
+      setLoading(true);
+      setError(null);
+
       const { data, error } = await supabase
         .from("gallery")
         .select("*")
@@ -30,7 +29,7 @@ export default function Gallery() {
       console.log("❌ Gallery error:", error);
 
       if (error) {
-        console.log(error.message);
+        setError(error.message);
       } else {
         setImages(data || []);
       }
@@ -38,46 +37,65 @@ export default function Gallery() {
       setLoading(false);
     };
 
-    fetchImages();
+    fetchGallery();
   }, []);
 
+  // LOADING STATE
   if (loading) {
     return (
-      <div className="py-20 text-center">
+      <section className="py-20 text-center text-gray-500">
         Loading gallery...
-      </div>
+      </section>
     );
   }
 
+  // ERROR STATE
+  if (error) {
+    return (
+      <section className="py-20 text-center text-red-600">
+        Error loading gallery: {error}
+      </section>
+    );
+  }
+
+  // EMPTY STATE
   if (images.length === 0) {
     return (
-      <div className="py-20 text-center text-gray-500">
-        No images found
-      </div>
+      <section className="py-20 text-center text-gray-500">
+        No images found in gallery
+      </section>
     );
   }
 
   return (
-    <section id="gallery" className="py-16 bg-gray-50">
+    <section id="gallery" className="py-16 sm:py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-6">
 
         <h2 className="text-3xl font-bold text-green-700 text-center mb-10">
           Our Gallery
         </h2>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
           {images.map((img) => (
-            <div key={img.id} className="bg-white rounded-xl overflow-hidden shadow">
+            <div
+              key={img.id}
+              className="bg-white rounded-xl shadow overflow-hidden"
+            >
 
+              {/* IMAGE */}
               <img
                 src={img.image}
-                alt={img.title || "gallery"}
-                className="w-full h-60 object-cover"
+                alt={img.title || "Gallery image"}
+                className="w-full h-64 object-cover"
+                onError={(e) => {
+                  console.log("❌ Image failed to load:", img.image);
+                }}
               />
 
+              {/* TITLE */}
               <div className="p-4">
-                <h3 className="font-semibold">
+                <h3 className="font-semibold text-black">
                   {img.title || "Farm Image"}
                 </h3>
               </div>
