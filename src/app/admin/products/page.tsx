@@ -16,6 +16,8 @@ export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [editingId, setEditingId] = useState<string | null>(null);
+
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -28,7 +30,11 @@ export default function AdminProducts() {
 
   // FETCH PRODUCTS
   const fetchProducts = async () => {
-    const { data } = await supabase.from("products").select("*");
+    const { data } = await supabase
+      .from("products")
+      .select("*")
+      .order("created_at", { ascending: false });
+
     setProducts(data || []);
     setLoading(false);
   };
@@ -37,7 +43,7 @@ export default function AdminProducts() {
     fetchProducts();
   }, []);
 
-  // TEXT INPUTS
+  // INPUT HANDLER
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -73,16 +79,28 @@ export default function AdminProducts() {
     setUploading(false);
   };
 
-  // ADD PRODUCT
+  // ADD / UPDATE PRODUCT
   const addProduct = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    await supabase.from("products").insert([
-      {
-        ...form,
-        image: imageUrl,
-      },
-    ]);
+    if (editingId) {
+      await supabase
+        .from("products")
+        .update({
+          ...form,
+          image: imageUrl,
+        })
+        .eq("id", editingId);
+
+      setEditingId(null);
+    } else {
+      await supabase.from("products").insert([
+        {
+          ...form,
+          image: imageUrl,
+        },
+      ]);
+    }
 
     setForm({
       name: "",
@@ -99,7 +117,35 @@ export default function AdminProducts() {
   // DELETE PRODUCT
   const deleteProduct = async (id: string) => {
     await supabase.from("products").delete().eq("id", id);
-    setProducts(products.filter((p) => p.id !== id));
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  // START EDIT
+  const startEdit = (p: Product) => {
+    setEditingId(p.id);
+
+    setForm({
+      name: p.name,
+      description: p.description,
+      price: p.price,
+      category: p.category,
+    });
+
+    setImageUrl(p.image);
+  };
+
+  // CANCEL EDIT
+  const cancelEdit = () => {
+    setEditingId(null);
+
+    setForm({
+      name: "",
+      description: "",
+      price: "",
+      category: "",
+    });
+
+    setImageUrl("");
   };
 
   return (
@@ -171,9 +217,18 @@ export default function AdminProducts() {
           type="submit"
           className="bg-green-600 text-white py-2 rounded w-full"
         >
-          Add Product
+          {editingId ? "Update Product" : "Add Product"}
         </button>
 
+        {editingId && (
+          <button
+            type="button"
+            onClick={cancelEdit}
+            className="bg-gray-500 text-white py-2 rounded w-full"
+          >
+            Cancel Edit
+          </button>
+        )}
       </form>
 
       {/* LIST */}
@@ -197,12 +252,23 @@ export default function AdminProducts() {
               <p className="text-green-700 font-bold">{p.price}</p>
               <p className="text-sm text-gray-500">{p.category}</p>
 
-              <button
-                onClick={() => deleteProduct(p.id)}
-                className="mt-3 bg-red-500 text-white px-3 py-1 rounded"
-              >
-                Delete
-              </button>
+              <div className="flex gap-2 mt-3">
+
+                <button
+                  onClick={() => startEdit(p)}
+                  className="bg-blue-500 text-white px-3 py-1 rounded"
+                >
+                  Edit
+                </button>
+
+                <button
+                  onClick={() => deleteProduct(p.id)}
+                  className="bg-red-500 text-white px-3 py-1 rounded"
+                >
+                  Delete
+                </button>
+
+              </div>
 
             </div>
           ))}

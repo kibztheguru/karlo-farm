@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 type Message = {
@@ -10,81 +9,58 @@ type Message = {
   email: string;
   message: string;
   created_at: string;
+  read: boolean;
 };
 
 export default function AdminMessages() {
-  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 🔐 CHECK AUTH
-  useEffect(() => {
-    const checkUser = async () => {
-      const { data } = await supabase.auth.getUser();
-
-      if (!data.user) {
-        router.push("/admin/login");
-      }
-    };
-
-    checkUser();
-  }, [router]);
-
-  // 📩 FETCH MESSAGES
+  // FETCH MESSAGES
   const fetchMessages = async () => {
-  const { data, error } = await supabase
-    .from("messages")
-    .select("*");
+    const { data, error } = await supabase
+      .from("messages")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-  console.log("DATA:", data);
-  console.log("ERROR:", error);
+    if (!error) {
+      setMessages(data || []);
+    }
 
-  if (error) {
-    console.error("Supabase error:", error);
-  } else {
-    setMessages(data || []);
-  }
-
-  setLoading(false);
-};
-useEffect(() => {
-  fetchMessages();
-}, []);
-
-  // 🗑 DELETE MESSAGE
-  const deleteMessage = async (id: string) => {
-    const confirmDelete = window.confirm("Delete this message?");
-    if (!confirmDelete) return;
-
-    await supabase.from("messages").delete().eq("id", id);
-
-    setMessages((prev) => prev.filter((msg) => msg.id !== id));
+    setLoading(false);
   };
 
-  // 🚪 LOGOUT
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push("/admin/login");
+  useEffect(() => {
+    fetchMessages();
+  }, []);
+
+  // DELETE MESSAGE
+  const deleteMessage = async (id: string) => {
+    await supabase.from("messages").delete().eq("id", id);
+    setMessages((prev) => prev.filter((m) => m.id !== id));
+  };
+
+  // MARK AS READ
+  const markAsRead = async (id: string) => {
+    await supabase
+      .from("messages")
+      .update({ read: true })
+      .eq("id", id);
+
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === id ? { ...m, read: true } : m
+      )
+    );
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="space-y-6">
 
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-green-700">
-          Admin Dashboard
-        </h1>
+      <h1 className="text-3xl font-bold text-green-700">
+        Messages Inbox
+      </h1>
 
-        <button
-          onClick={handleLogout}
-          className="bg-red-600 text-white px-4 py-2 rounded"
-        >
-          Logout
-        </button>
-      </div>
-
-      {/* CONTENT */}
       {loading ? (
         <p>Loading messages...</p>
       ) : messages.length === 0 ? (
@@ -95,29 +71,62 @@ useEffect(() => {
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className="bg-white p-4 rounded-xl shadow"
+              className={`p-4 rounded-xl shadow bg-white border-l-4 ${
+                msg.read ? "border-green-500" : "border-red-500"
+              }`}
             >
-              <p className="font-bold">{msg.name}</p>
-              <p className="text-gray-600">{msg.email}</p>
-              <p className="mt-2">{msg.message}</p>
 
-              <div className="flex justify-between items-center mt-4">
+              {/* HEADER */}
+              <div className="flex justify-between items-start">
+
+                <div>
+                  <h2 className="font-bold text-lg">
+                    {msg.name}
+                  </h2>
+
+                  <p className="text-sm text-gray-600">
+                    {msg.email}
+                  </p>
+                </div>
+
                 <span className="text-xs text-gray-400">
-               {msg.created_at ? new Date(msg.created_at).toLocaleString() : "No date"}
+                  {new Date(msg.created_at).toLocaleString()}
                 </span>
+
+              </div>
+
+              {/* MESSAGE */}
+              <p className="mt-3 text-gray-700">
+                {msg.message}
+              </p>
+
+              {/* ACTIONS */}
+              <div className="flex gap-2 mt-4">
+
+                {!msg.read && (
+                  <button
+                    onClick={() => markAsRead(msg.id)}
+                    className="bg-green-600 text-white px-3 py-1 rounded text-sm"
+                  >
+                    Mark as Read
+                  </button>
+                )}
 
                 <button
                   onClick={() => deleteMessage(msg.id)}
-                  className="bg-red-500 text-white px-3 py-1 rounded"
+                  className="bg-red-500 text-white px-3 py-1 rounded text-sm"
                 >
                   Delete
                 </button>
+
               </div>
+
             </div>
           ))}
 
         </div>
       )}
+
     </div>
   );
 }
