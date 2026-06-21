@@ -100,29 +100,44 @@ export default function AdminGallery() {
   };
 
   // DELETE IMAGE
-  const deleteImage = async (id: string) => {
-    const confirmDelete = confirm("Delete this image?");
-    if (!confirmDelete) return;
+  const deleteImage = async (id: string, imageUrl: string) => {
+  const confirmDelete = confirm("Delete this image?");
+  if (!confirmDelete) return;
 
-    const { error } = await supabase
+  try {
+    // 1. Extract file name from URL
+    const fileName = imageUrl.split("/").pop();
+
+    if (fileName) {
+      // 2. Delete from storage bucket
+      const { error: storageError } = await supabase.storage
+        .from("gallery")
+        .remove([fileName]);
+
+      if (storageError) {
+        console.log("Storage delete error:", storageError.message);
+      }
+    }
+
+    // 3. Delete from database
+    const { error: dbError } = await supabase
       .from("gallery")
       .delete()
       .eq("id", id);
 
-    if (error) {
-      setError(error.message);
+    if (dbError) {
+      console.log("DB delete error:", dbError.message);
       return;
     }
 
+    // 4. Update UI
     setImages((prev) => prev.filter((img) => img.id !== id));
-  };
 
-  return (
-    <div className="space-y-6">
-
-      <h1 className="text-3xl font-bold text-green-700">
-        Gallery Manager
-      </h1>
+    console.log("✅ Image deleted successfully");
+  } catch (err) {
+    console.log("❌ Unexpected error:", err);
+  }
+};
 
       {/* ERROR DISPLAY */}
       {error && (

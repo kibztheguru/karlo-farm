@@ -67,7 +67,7 @@ export default function Products() {
 
                 {/* IMAGE */}
                 <div className="relative overflow-hidden">
-                  <Image
+                  <img
                     src={item.image}
                     alt={item.name}
                     width={600}
