@@ -15,10 +15,15 @@ export default function AdminGallery() {
 
   // FETCH IMAGES
   const fetchImages = async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("gallery")
       .select("*")
       .order("created_at", { ascending: false });
+
+    if (error) {
+      console.log("Fetch error:", error.message);
+      return;
+    }
 
     setImages(data || []);
   };
@@ -34,38 +39,66 @@ export default function AdminGallery() {
 
     setUploading(true);
 
-    const fileName = `${Date.now()}-${file.name}`;
+    try {
+      const fileName = `${Date.now()}-${file.name}`;
 
-    // upload to storage
-    const { error } = await supabase.storage
-      .from("gallery")
-      .upload(fileName, file);
+      // 1. Upload to storage
+      const { error: uploadError } = await supabase.storage
+        .from("gallery")
+        .upload(fileName, file);
 
-    if (error) {
-      alert("Upload failed");
-      setUploading(false);
-      return;
+      if (uploadError) {
+        alert(uploadError.message);
+        setUploading(false);
+        return;
+      }
+
+      // 2. Get public URL
+      const { data } = supabase.storage
+        .from("gallery")
+        .getPublicUrl(fileName);
+
+      const imageUrl = data.publicUrl;
+
+      // 3. Save to DB
+      const { error: dbError } = await supabase
+        .from("gallery")
+        .insert([
+          {
+            image: imageUrl,
+          },
+        ]);
+
+      if (dbError) {
+        alert(dbError.message);
+        setUploading(false);
+        return;
+      }
+
+      fetchImages();
+    } catch (err) {
+      console.log(err);
+      alert("Something went wrong");
     }
 
-    // get public URL
-    const { data } = supabase.storage
-      .from("gallery")
-      .getPublicUrl(fileName);
-
-    // save to database
-    await supabase.from("gallery").insert([
-      {
-        image: data.publicUrl,
-      },
-    ]);
-
     setUploading(false);
-    fetchImages();
   };
 
   // DELETE IMAGE
   const deleteImage = async (id: string) => {
-    await supabase.from("gallery").delete().eq("id", id);
+    const confirmDelete = confirm("Delete this image?");
+    if (!confirmDelete) return;
+
+    const { error } = await supabase
+      .from("gallery")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
     setImages((prev) => prev.filter((img) => img.id !== id));
   };
 
