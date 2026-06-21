@@ -49,7 +49,6 @@ export default function AdminGallery() {
     try {
       const fileName = `${Date.now()}-${file.name}`;
 
-      // 1. Upload to storage
       const { error: uploadError } = await supabase.storage
         .from("gallery")
         .upload(fileName, file);
@@ -60,14 +59,12 @@ export default function AdminGallery() {
         return;
       }
 
-      // 2. Get public URL
       const { data: urlData } = supabase.storage
         .from("gallery")
         .getPublicUrl(fileName);
 
       const imageUrl = urlData.publicUrl;
 
-      // 3. Insert into DB
       const { error: dbError } = await supabase
         .from("gallery")
         .insert([{ image: imageUrl }]);
@@ -119,9 +116,17 @@ export default function AdminGallery() {
   return (
     <div className="min-h-screen bg-gray-100 p-6 space-y-6">
 
-      <h1 className="text-3xl font-bold text-green-700">
-        Gallery Manager
-      </h1>
+      {/* HEADER */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-green-700">
+          Gallery Manager
+        </h1>
+
+        {/* STATS */}
+        <div className="bg-white px-4 py-2 rounded-xl shadow text-sm">
+          Total Images: {images.length}
+        </div>
+      </div>
 
       {/* ERROR */}
       {error && (
@@ -130,8 +135,12 @@ export default function AdminGallery() {
         </div>
       )}
 
-      {/* UPLOAD */}
-      <div className="bg-white p-4 rounded-xl shadow">
+      {/* UPLOAD SECTION */}
+      <div className="bg-white p-5 rounded-xl shadow space-y-3">
+        <h2 className="font-semibold text-gray-700">
+          Upload New Image
+        </h2>
+
         <input
           type="file"
           accept="image/*"
@@ -140,11 +149,18 @@ export default function AdminGallery() {
         />
 
         {uploading && (
-          <p className="text-sm text-gray-500 mt-2">
+          <p className="text-sm text-gray-500">
             Uploading image...
           </p>
         )}
       </div>
+
+      {/* EMPTY STATE */}
+      {images.length === 0 && (
+        <div className="text-center text-gray-500 py-10">
+          No images uploaded yet
+        </div>
+      )}
 
       {/* GRID */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -152,19 +168,23 @@ export default function AdminGallery() {
         {images.map((img) => (
           <div
             key={img.id}
-            className="relative group rounded-xl overflow-hidden shadow"
+            className="relative group bg-white rounded-xl overflow-hidden shadow"
           >
+
+            {/* IMAGE */}
             <img
               src={img.image}
               className="w-full h-40 object-cover"
             />
 
+            {/* DELETE BUTTON */}
             <button
               onClick={() => deleteImage(img.id, img.image)}
-              className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 transition"
+              className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 text-xs rounded shadow"
             >
               Delete
             </button>
+
           </div>
         ))}
 
