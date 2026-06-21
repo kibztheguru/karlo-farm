@@ -14,7 +14,7 @@ export default function AdminGallery() {
   const [uploading, setUploading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null); // Track which item is deleting
   const [error, setError] = useState<string | null>(null);
-  
+  console.log("GALLERY DATA:", images);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // FETCH
