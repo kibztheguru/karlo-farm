@@ -278,7 +278,6 @@ const handleImageUpload = async (
 <input
   type="file"
   accept="image/*"
-  capture="environment"
   onChange={handleImageUpload}
   className="border p-2 rounded w-full"
 />
