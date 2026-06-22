@@ -37,10 +37,10 @@ export default function Footer({ settings }: { settings: Settings | null }) {
             </p>
 
             <a
-              href={`mailto:${settings?.email || "kalrofarmnaivasha@gmail.com"}`}
+              href={`mailto:${settings?.email || "kalrofarmnaivasha254@gmail.com"}`}
               className="block mt-2 hover:text-green-300 transition"
             >
-              📧 {settings?.email || "kalrofarmnaivasha@gmail.com"}
+              📧 {settings?.email || "kalrofarmnaivasha254@gmail.com"}
             </a>
 
             <p className="mt-2">📍 Nakuru, Kenya</p>

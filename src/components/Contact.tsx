@@ -66,7 +66,7 @@ export default function Contact({ settings }: { settings: Settings | null }) {
             </p>
 
             <p>
-              📧 {settings?.email || "kalrofarm@gmail.com"}
+              📧 {settings?.email || "kalrofarmnaivasha254@gmail.com"}
             </p>
 
             <a
