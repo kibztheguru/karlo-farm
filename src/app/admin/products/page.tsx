@@ -29,20 +29,33 @@ export default function AdminProducts() {
   const [uploading, setUploading] = useState(false);
 
   // FETCH PRODUCTS
-  const fetchProducts = async () => {
-    const { data } = await supabase
+const fetchProducts = async () => {
+  setLoading(true);
+
+  try {
+    const { data, error } = await supabase
       .from("products")
       .select("*")
       .order("created_at", { ascending: false });
 
+    if (error) {
+      console.error("Fetch products error:", error);
+      alert(`Failed to load products: ${error.message}`);
+      return;
+    }
+
     setProducts(data || []);
+  } catch (err) {
+    console.error("Unexpected fetch error:", err);
+    alert("An unexpected error occurred while loading products.");
+  } finally {
     setLoading(false);
-  };
+  }
+};
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
+useEffect(() => {
+  fetchProducts();
+}, []);
   // INPUT HANDLER
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -51,22 +64,53 @@ export default function AdminProducts() {
   };
 
   // IMAGE UPLOAD
-  const handleImageUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+// IMAGE UPLOAD
+const handleImageUpload = async (
+  e: React.ChangeEvent<HTMLInputElement>
+) => {
+  const file = e.target.files?.[0];
 
-    setUploading(true);
+  if (!file) {
+    alert("No file selected");
+    return;
+  }
 
-    const fileName = `${Date.now()}-${file.name}`;
+  console.log("File Name:", file.name);
+  console.log("File Type:", file.type);
+  console.log("File Size:", file.size);
 
-    const { error } = await supabase.storage
+  // Max 10MB
+  if (file.size > 10 * 1024 * 1024) {
+    alert("Image must be smaller than 10MB");
+    return;
+  }
+
+  // Ensure it's an image
+  if (!file.type.startsWith("image/")) {
+    alert("Please select a valid image file");
+    return;
+  }
+
+  setUploading(true);
+
+  try {
+    // Safe filename for mobile devices
+    const fileExt = file.name.split(".").pop() || "jpg";
+
+    const fileName = `${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(2, 8)}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
       .from("products")
-      .upload(fileName, file);
+      .upload(fileName, file, {
+        cacheControl: "3600",
+        upsert: false,
+      });
 
-    if (error) {
-      alert("Image upload failed");
+    if (uploadError) {
+      console.error("Upload Error:", uploadError);
+      alert(`Upload failed: ${uploadError.message}`);
       setUploading(false);
       return;
     }
@@ -75,31 +119,62 @@ export default function AdminProducts() {
       .from("products")
       .getPublicUrl(fileName);
 
+    if (!data?.publicUrl) {
+      alert("Failed to generate image URL");
+      setUploading(false);
+      return;
+    }
+
     setImageUrl(data.publicUrl);
-    setUploading(false);
-  };
+
+    console.log("Uploaded URL:", data.publicUrl);
+
+    alert("Image uploaded successfully!");
+  } catch (err) {
+    console.error("Unexpected Error:", err);
+    alert("An unexpected error occurred while uploading.");
+  }
+
+  setUploading(false);
+};
 
   // ADD / UPDATE PRODUCT
   const addProduct = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
+
+  try {
+    if (!imageUrl) {
+      alert("Please upload an image first.");
+      return;
+    }
+
+    let error;
 
     if (editingId) {
-      await supabase
+      ({ error } = await supabase
         .from("products")
         .update({
           ...form,
           image: imageUrl,
         })
-        .eq("id", editingId);
+        .eq("id", editingId));
 
       setEditingId(null);
     } else {
-      await supabase.from("products").insert([
-        {
-          ...form,
-          image: imageUrl,
-        },
-      ]);
+      ({ error } = await supabase
+        .from("products")
+        .insert([
+          {
+            ...form,
+            image: imageUrl,
+          },
+        ]));
+    }
+
+    if (error) {
+      console.error(error);
+      alert(error.message);
+      return;
     }
 
     setForm({
@@ -112,7 +187,11 @@ export default function AdminProducts() {
     setImageUrl("");
 
     fetchProducts();
-  };
+  } catch (err) {
+    console.error(err);
+    alert("Failed to save product.");
+  }
+};
 
   // DELETE PRODUCT
   const deleteProduct = async (id: string) => {
@@ -195,12 +274,14 @@ export default function AdminProducts() {
         />
 
         {/* IMAGE UPLOAD */}
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleImageUpload}
-          className="border p-2 rounded w-full"
-        />
+        {/* IMAGE UPLOAD */}
+<input
+  type="file"
+  accept="image/*"
+  capture="environment"
+  onChange={handleImageUpload}
+  className="border p-2 rounded w-full"
+/>
 
         {uploading && (
           <p className="text-sm text-gray-500">Uploading image...</p>
